@@ -177,7 +177,11 @@ const carousel = document.getElementById('carousel');
 for (let i = 0; i < total; i++) {
   const panel = document.createElement('div');
   panel.className = 'panel';
-  panel.innerHTML = `<img src="https://raw.githubusercontent.com/hll512/love/main/${pics[i]}" alt="photo${i + 1}">`;
+  panel.innerHTML = `<img src="https://raw.githubusercontent.com/hll512/Picture/main/${pics[i]}" alt="photo${i + 1}">`;
+  const angle = i * (360 / total);
+  panel.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+  carousel.appendChild(panel);
+}
   const angle = i * (360 / total);
   panel.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
   carousel.appendChild(panel);

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>给宝贝的曲面星河相册 ✨</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --photo:200px;          /* 单张图尺寸 */
+    --radius:764px;         /* 圆柱半径，后面 JS 会重新计算 */
+    --time:25s;             /* 默认一圈时间 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#000;font-family:"Quicksand","PingFang SC",sans-serif}
+
+  /* 粒子星空背景 */
+  #particles{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+  }
+
+  /* 标题 */
+  h1{
+    position:absolute;
+    top:6vh;
+    left:50%;
+    transform:translateX(-50%);
+    color:#fff;
+    font-size:clamp(2rem,5vw,3.5rem);
+    font-weight:300;
+    letter-spacing:3px;
+    pointer-events:none;
+    text-shadow:0 0 15px rgba(255,182,193,.8);
+  }
+
+  /* 3D 舞台 */
+  #stage{
+    width:100%;
+    height:100%;
+    perspective:1200px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #carousel{
+    width:var(--photo);
+    height:var(--photo);
+    transform-style:preserve-3d;
+    animation:rotate var(--time) infinite linear;
+    position:relative;
+  }
+  #carousel.paused{animation-play-state:paused}
+
+  /* 单张照片 */
+  .panel{
+    position:absolute;
+    width:var(--photo);
+    height:var(--photo);
+    backface-visibility:hidden;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 0 25px 5px rgba(255,182,193,.55),
+                0 0 0 1px rgba(255,255,255,.08);
+    transform-origin:center center;
+  }
+  .panel::after{           /* 倒影 */
+    content:'';
+    position:absolute;
+    top:100%;
+    left:0;
+    width:100%;
+    height:100%;
+    background:inherit;
+    transform:scaleY(-1);
+    opacity:.25;
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,transparent 100%);
+  }
+  .panel img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  /* 底部爱心进度条 */
+  footer{
+    position:absolute;
+    bottom:4vh;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:rgba(255,255,255,.7);
+    font-size:.9rem;
+  }
+  #heart{
+    width:24px;
+    height:24px;
+    background:#ff4d84;
+    position:relative;
+    transform:rotate(-45deg);
+    animation:beat 1.2s infinite;
+  }
+  #heart::before,#heart::after{
+    content:'';
+    width:24px;
+    height:24px;
+    background:#ff4d84;
+    border-radius:50%;
+    position:absolute;
+  }
+  #heart::before{top:-12px;left:0}
+  #heart::after{left:12px;top:0}
+  @keyframes beat{
+    50%{transform:rotate(-45deg) scale(1.15)}
+  }
+
+  /* 滚动提示 */
+  .hint{
+    position:absolute;
+    bottom:12vh;
+    left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,.5);
+    font-size:.8rem;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<h1>Our Little Universe 2024</h1>
+
+<div id="stage">
+  <div id="carousel"></div>
+</div>
+
+<footer>
+  <div id="heart"></div>
+  <span>Love Progress <span id="pct">0</span>%</span>
+</footer>
+<div class="hint">滚轮加速 ← → 微调 | 悬停暂停</div>
+
+<script>
+/* ========== 0. 粒子星空 ========== */
+const canvas=document.getElementById('particles'),ctx=canvas.getContext('2d');
+let W,H,particles=[];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;}
+window.addEventListener('resize',resize);resize();
+class P{constructor(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.5+1;this.vx=(Math.random()-0.5)*.3;this.vy=(Math.random()-0.5)*.3;this.o=Math.random()*.5+.3}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W)this.vx*=-1;if(this.y<0||this.y>H)this.vy*=-1}draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${this.o})`;ctx.fill()}}
+for(let i=0;i<180;i++)particles.push(new P());
+function animateParticles(){ctx.clearRect(0,0,W,H);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animateParticles);}
+animateParticles();
+
+/* ========== 1. 生成 3D 照片墙 ========== */
+const total=24;
+const photo=200;                       // 与 CSS 保持一致
+const radius=Math.round(photo/2/Math.tan(Math.PI/total));
+document.documentElement.style.setProperty('--radius',radius+'px');
+
+const carousel=document.getElementById('carousel');
+for(let i=0;i<total;i++){
+  const panel=document.createElement('div');
+  panel.className='panel';
+  panel.innerHTML=`<img src="img/${i+1}.jpg" alt="photo${i+1}">`;
+  const angle=i*(360/total);
+  panel.style.transform=`rotateY(${angle}deg) translateZ(${radius}px)`;
+  carousel.appendChild(panel);
+}
+
+/* ========== 2. 交互：滚轮调速 + 左右键 ========== */
+let base=25,current=base;
+window.addEventListener('wheel',e=>{
+  current+=e.deltaY*0.01;
+  current=Math.max(5,Math.min(60,current));   // 5~60s 一圈
+  document.documentElement.style.setProperty('--time',current+'s');
+});
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft') carousel.style.transform+=' rotateY(4deg)';
+  if(e.key==='ArrowRight') carousel.style.transform+=' rotateY(-4deg)';
+});
+
+/* ========== 3. 爱心进度条（根据旋转角度） ========== */
+const pct=document.getElementById('pct');
+function progress(){
+  const st=window.getComputedStyle(carousel);
+  const mat=st.transform.match(/matrix3d\(([^)]+)\)/);
+  if(!mat)return;
+  const values=mat[1].split(', ');
+  const a=values[0],b=values[2];
+  const angle=Math.round(Math.atan2(b,a)*180/Math.PI);
+  const p=(angle+360)%360;
+  pct.textContent=Math.round(p/3.6);
+  requestAnimationFrame(progress);
+}
+progress();
+
+/* ========== 4. 悬停暂停 ========== */
+carousel.addEventListener('mouseenter',()=>carousel.classList.add('paused'));
+carousel.addEventListener('mouseleave',()=>carousel.classList.remove('paused'));
+</script>
+</body>
+</html>

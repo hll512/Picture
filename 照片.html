@@ -132,7 +132,7 @@
 <body>
 
 <canvas id="particles"></canvas>
-<h1>Our Little Universe 2024</h1>
+<h1>吴新怡宝贝的照片集</h1>
 
 <div id="stage">
   <div id="carousel"></div>
@@ -155,19 +155,31 @@ for(let i=0;i<180;i++)particles.push(new P());
 function animateParticles(){ctx.clearRect(0,0,W,H);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animateParticles);}
 animateParticles();
 
-/* ========== 1. 生成 3D 照片墙 ========== */
-const total=24;
-const photo=200;                       // 与 CSS 保持一致
-const radius=Math.round(photo/2/Math.tan(Math.PI/total));
-document.documentElement.style.setProperty('--radius',radius+'px');
+/* ========== 1. 生成 3D 照片墙（24 张 GitHub 直链） ========== */
+const total = 24;
+const photo = 200;
+const radius = Math.round(photo / 2 / Math.tan(Math.PI / total));
+document.documentElement.style.setProperty('--radius', radius + 'px');
 
-const carousel=document.getElementById('carousel');
-for(let i=0;i<total;i++){
-  const panel=document.createElement('div');
-  panel.className='panel';
-  panel.innerHTML=`<img src="img/${i+1}.jpg" alt="photo${i+1}">`;
-  const angle=i*(360/total);
-  panel.style.transform=`rotateY(${angle}deg) translateZ(${radius}px)`;
+// 24 张图文件名（按顺序）
+const pics = [
+  'mmexport1759766220397.jpg','mmexport1759766224170.jpg','mmexport1759766226010.jpg',
+  'mmexport1759766229696.jpg','mmexport1759766231672.jpg','mmexport1759766471043.jpg',
+  'mmexport1759909976225.jpg','mmexport1759910525352.jpg','mmexport1760190750542.jpg',
+  'mmexport1760199609227.jpg','mmexport1760283717376.jpg','mmexport1760714201988.jpg',
+  'mmexport1760785902493.jpg','mmexport1761333193024.jpg','mmexport1761425433514.jpg',
+  'mmexport1761426236904.jpg','mmexport1761426238840.jpg','mmexport1761426244502.jpg',
+  'mmexport1761426673985.jpg','mmexport1761426677869.jpg','mmexport1761427060436.jpg',
+  'mmexport1762611945628.jpg','mmexport1763766996149.jpg','mmexport1763788148265.jpg'
+];
+
+const carousel = document.getElementById('carousel');
+for (let i = 0; i < total; i++) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<img src="https://raw.githubusercontent.com/hll512/love/main/${pics[i]}" alt="photo${i + 1}">`;
+  const angle = i * (360 / total);
+  panel.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
   carousel.appendChild(panel);
 }
 
